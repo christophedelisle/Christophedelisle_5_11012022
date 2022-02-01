@@ -8,10 +8,10 @@ fetch("http://localhost:3000/api/products")
     console.log(data);
 
     // Boucle permétant de parcourir le tableau des données récupérées:
-    for (product of data) {
+    for (let product of data) {
       // Création d'éléments et insertion des données dans le DOM :
 
-      // Insertion de l'ID du produit dans un élément <a>
+      // Création de l'élément <a> et insertion de l'ID du produit
       let linkItems = document.createElement("a");
       document.querySelector("#items").appendChild(linkItems);
       linkItems.href = `./product.html?id=${product._id}`;
