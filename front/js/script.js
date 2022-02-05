@@ -12,28 +12,28 @@ fetch("http://localhost:3000/api/products")
       // Création d'éléments et insertion des données dans le DOM :
 
       // Création de l'élément <a> et insertion de l'ID du produit
-      let linkItems = document.createElement("a");
+      const linkItems = document.createElement("a");
       document.querySelector("#items").appendChild(linkItems);
       linkItems.href = `./product.html?id=${product._id}`;
 
       // Insertion de l'élément article
-      let articleItems = document.createElement("article");
+      const articleItems = document.createElement("article");
       linkItems.appendChild(articleItems);
 
       // Insertion de l'image + alt
-      let imgItems = document.createElement("img");
+      const imgItems = document.createElement("img");
       articleItems.appendChild(imgItems);
       imgItems.src = product.imageUrl;
       imgItems.alt = product.altTxt;
 
       // Insertion du nom du produit
-      let nameItems = document.createElement("h3");
+      const nameItems = document.createElement("h3");
       articleItems.appendChild(nameItems);
       nameItems.classList.add("productName");
       nameItems.innerHTML = product.name;
 
       // Insertion de la description
-      let descriptionItems = document.createElement("p");
+      const descriptionItems = document.createElement("p");
       articleItems.appendChild(descriptionItems);
       descriptionItems.classList.add("productDescription");
       descriptionItems.innerHTML = product.description;
