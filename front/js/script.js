@@ -1,4 +1,4 @@
-//Utilisation de "fetch" pour récupérer les données de l'API :
+// Utilisation de "fetch" pour récupérer les données de l'API :
 fetch("http://localhost:3000/api/products")
   // Promesses pour récupérer les données, aprés les avoir transformées en format JSON :
   .then(function (res) {

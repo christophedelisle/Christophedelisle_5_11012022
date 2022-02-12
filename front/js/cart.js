@@ -1,27 +1,35 @@
+// lecture des données du LocalStorage aprés les avoir "reformées" (tableau)
 const productStorage = JSON.parse(localStorage.getItem("product"));
 console.log(productStorage);
 
+//Utilisation de "fetch" pour récupérer les données de l'API :
 fetch("http://localhost:3000/api/products")
-  // Promesses pour récupérer les données, aprés les avoir transformées en format JSON :
   .then(function (res) {
     return res.json();
   })
   .then(function (data) {
     console.log(data);
 
-    // Function pour insérer dans le DOM l'ensembles des éléments récupérés dans le Local Storage et dans l'API
+    // *( la récupération de certain éléments comme les images, ou les prix doivent se faire dans l'API
+    // et non dans le Local Storage afin d'éviter des incohérences
+    // dans le cas d'une mise à jour / modifications de ses élements dans l'API )*
+
+    // Fonction pour insérer dans le DOM l'ensemble des éléments récupérés dans le Local Storage et dans l'API
     function creatCart() {
+      let totalPrice = 0;
+      let totalQty = 0;
       for (let product of productStorage) {
-        // Création de l'article
+        // Création de l'article dans le DOM
         const productArticle = document.createElement("article");
         document.querySelector("#cart__items").appendChild(productArticle);
         productArticle.className = "cart__item";
         productArticle.setAttribute("data-id", product.id);
         productArticle.setAttribute("data-color", product.color);
 
+        // Récupération dans l'API, de l'emplacement (ligne du tableau data) où se situe l'id des produits ajoutés au panier,
+        // afin de pouvoir y sélectionner les élements réstant à ajouter au DOM ( image, description, prix ...)
         const idFound = (element) => element._id === product.id;
-        const indexFound = data.findIndex(idFound);
-        const ligneFound = data[indexFound];
+        const ligneFound = data.find(idFound);
 
         // Insertion de l'image
         const productImgCart = document.createElement("div");
@@ -41,7 +49,8 @@ fetch("http://localhost:3000/api/products")
 
         const productContentDescription = document.createElement("div");
         productContent.appendChild(productContentDescription);
-        productContent.className = "cart__item__content__description";
+        productContentDescription.className =
+          "cart__item__content__description";
 
         const productTitle = document.createElement("h2");
         productContentDescription.appendChild(productTitle);
@@ -49,17 +58,17 @@ fetch("http://localhost:3000/api/products")
         productTitle.innerHTML = ligneFound.name;
 
         const productColor = document.createElement("p");
-        productTitle.appendChild(productColor);
+        productContentDescription.appendChild(productColor);
         productColor.innerHTML = product.color;
 
         const productPrice = document.createElement("p");
-        productColor.appendChild(productPrice);
+        productContentDescription.appendChild(productPrice);
         productPrice.innerHTML = ligneFound.price + " €";
 
         // Insertion du bouton de gestion des quantités
         const productContentSetting = document.createElement("div");
         productContent.appendChild(productContentSetting);
-        productContent.className = "cart__item__content__settings";
+        productContentSetting.className = "cart__item__content__settings";
 
         const productContentSettingQuantity = document.createElement("div");
         productContentSetting.appendChild(productContentSettingQuantity);
@@ -82,14 +91,41 @@ fetch("http://localhost:3000/api/products")
         // Insertion du bouton de suppression du produit
         const productContentDelete = document.createElement("div");
         productContentSetting.appendChild(productContentDelete);
-        productContentSetting.className =
+        productContentDelete.className =
           "cart__item__content__settings__delete";
 
         const productDeleteItem = document.createElement("p");
         productContentDelete.appendChild(productDeleteItem);
         productDeleteItem.className = "deleteItem";
         productDeleteItem.innerHTML = "Supprimer";
+
+        // Calcul prix total
+        totalPrice = totalPrice + ligneFound.price * product.quantity;
+        document.querySelector("#totalPrice").innerHTML = totalPrice;
+
+        // Calcul nombre d'articles total
+        totalQty = parseInt(totalQty) + parseInt(productItemQuantity.value);
+        document.querySelector("#totalQuantity").innerHTML = totalQty;
+
+        ///
+        const resetAndRestartPage = () => {
+          document.querySelector("#cart__items").innerHTML = "";
+          creatCart();
+        };
+
+        document.querySelector(".deleteItem").addEventListener("click", () => {
+          productStorage.filter(
+            (el) => el.id !== product.id && el.color !== product.color
+          );
+          resetAndRestartPage();
+        });
       }
     }
+
     creatCart();
+  })
+
+  // Création d'un message d'alerte en cas d'erreur
+  .catch(function (err) {
+    alert(err);
   });

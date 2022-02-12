@@ -27,7 +27,7 @@ const addParam = function (productSelect) {
   }
 };
 
-//Utilisation de "fetch" pour récupérer les données liées au produit séléctionné (par l'id)
+// Utilisation de "fetch" pour récupérer les données liées au produit séléctionné (par l'id)
 fetch(`http://localhost:3000/api/products/${idPicked}`)
   .then(function (res) {
     return res.json();
@@ -73,8 +73,8 @@ addToCart.addEventListener("click", function () {
   // lecture des données du LocalStorage ou création d'un tableau vide si LocalStorage vide
   const productStorage = JSON.parse(localStorage.getItem("product")) || [];
 
-  //Fonction faisant la comparaison entre les éléments présent dans le LS et ceux en cours de remontés
-  //Si des éléments ont le même id et la même couleur, augmentation uniquement de la quantité, sinon remontée des données telles quelles
+  // Fonction faisant la comparaison entre les éléments présent dans le LS et ceux en cours de remontés
+  // Si des éléments ont le même id et la même couleur, augmentation uniquement de la quantité, sinon remontée des données telles quelles
 
   const updateStorage = function (productStorage) {
     const elementsFound = productStorage.find(
@@ -87,28 +87,12 @@ addToCart.addEventListener("click", function () {
     } else {
       productStorage.push(optionSelected);
     }
-    //Stockage des données dans le LocalStorage aprés les avoir transformées en chaine de caractères
+    // Stockage des données dans le LocalStorage aprés les avoir transformées en chaine de caractères
     localStorage.setItem("product", JSON.stringify(productStorage));
   };
 
-  //Appel de la fonction "updateStorage"
+  // Appel de la fonction "updateStorage"
   updateStorage(productStorage);
 
   console.log(productStorage);
-
-  /*const elementsFound = productStorage.find(
-    (element) => element.id === idPicked && element.color === colorPicked.value
-  );
-  if (elementsFound) {
-    elementsFound.quantity =
-      parseInt(elementsFound.quantity) + parseInt(optionSelected.quantity);
-
-    // Sinon, remontée des données telles quelles
-  } else {
-    productStorage.push(optionSelected);
-  }
-
-  //Stockage des données dans le LocalStorage aprés les avoir transformées en chaine de caractères
-  localStorage.setItem("product", JSON.stringify(productStorage));
-  console.log(productStorage);*/
 });
