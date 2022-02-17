@@ -4,7 +4,7 @@ const url = new URL(str);
 const idPicked = url.searchParams.get("id");
 
 //Fonction permétant d'insérer l'image, le nom, le prix, la decription et les différentes couleurs du canapé séléctionné, dans la page (DOM) produit
-const addParam = function (productSelect) {
+const addParamHtml = (productSelect) => {
   const paramImg = document.createElement("img");
   document.querySelector(".item .item__img").appendChild(paramImg);
   paramImg.src = productSelect.imageUrl;
@@ -26,6 +26,21 @@ const addParam = function (productSelect) {
     paramColor.innerHTML = color;
   }
 };
+// Fonction faisant la comparaison entre les éléments présent dans le LS et ceux en cours de remontés
+// Si des éléments ont le même id et la même couleur, augmentation uniquement de la quantité, sinon remontée des données telles quelles
+const updateStorage = (productStorage) => {
+  const elementsFound = productStorage.find(
+    (element) => element.id === idPicked && element.color === colorPicked.value
+  );
+  if (elementsFound) {
+    elementsFound.quantity =
+      parseInt(elementsFound.quantity) + parseInt(optionSelected.quantity);
+  } else {
+    productStorage.push(optionSelected);
+  }
+  // Stockage des données dans le LocalStorage aprés les avoir transformées en chaine de caractères
+  localStorage.setItem("product", JSON.stringify(productStorage));
+};
 
 // Utilisation de "fetch" pour récupérer les données liées au produit séléctionné (par l'id)
 fetch(`http://localhost:3000/api/products/${idPicked}`)
@@ -35,7 +50,7 @@ fetch(`http://localhost:3000/api/products/${idPicked}`)
   .then(function (productSelect) {
     if (productSelect) {
       // Si des éléments éxistes, appel de la fonction "addParam"
-      addParam(productSelect);
+      addParamHtml(productSelect);
     }
   })
 
@@ -73,26 +88,6 @@ addToCart.addEventListener("click", function () {
   // lecture des données du LocalStorage ou création d'un tableau vide si LocalStorage vide
   const productStorage = JSON.parse(localStorage.getItem("product")) || [];
 
-  // Fonction faisant la comparaison entre les éléments présent dans le LS et ceux en cours de remontés
-  // Si des éléments ont le même id et la même couleur, augmentation uniquement de la quantité, sinon remontée des données telles quelles
-
-  const updateStorage = function (productStorage) {
-    const elementsFound = productStorage.find(
-      (element) =>
-        element.id === idPicked && element.color === colorPicked.value
-    );
-    if (elementsFound) {
-      elementsFound.quantity =
-        parseInt(elementsFound.quantity) + parseInt(optionSelected.quantity);
-    } else {
-      productStorage.push(optionSelected);
-    }
-    // Stockage des données dans le LocalStorage aprés les avoir transformées en chaine de caractères
-    localStorage.setItem("product", JSON.stringify(productStorage));
-  };
-
   // Appel de la fonction "updateStorage"
   updateStorage(productStorage);
-
-  console.log(productStorage);
 });
