@@ -26,21 +26,6 @@ const addParamHtml = (productSelect) => {
     paramColor.innerHTML = color;
   }
 };
-// Fonction faisant la comparaison entre les éléments présent dans le LS et ceux en cours de remontés
-// Si des éléments ont le même id et la même couleur, augmentation uniquement de la quantité, sinon remontée des données telles quelles
-const updateStorage = (productStorage) => {
-  const elementsFound = productStorage.find(
-    (element) => element.id === idPicked && element.color === colorPicked.value
-  );
-  if (elementsFound) {
-    elementsFound.quantity =
-      parseInt(elementsFound.quantity) + parseInt(optionSelected.quantity);
-  } else {
-    productStorage.push(optionSelected);
-  }
-  // Stockage des données dans le LocalStorage aprés les avoir transformées en chaine de caractères
-  localStorage.setItem("product", JSON.stringify(productStorage));
-};
 
 // Utilisation de "fetch" pour récupérer les données liées au produit séléctionné (par l'id)
 fetch(`http://localhost:3000/api/products/${idPicked}`)
@@ -68,6 +53,23 @@ addToCart.addEventListener("click", function () {
     id: idPicked,
     color: colorPicked.value,
     quantity: quantityPicked.value,
+  };
+
+  // Fonction faisant la comparaison entre les éléments présent dans le LS et ceux en cours de remontés
+  // Si des éléments ont le même id et la même couleur, augmentation uniquement de la quantité, sinon remontée des données telles quelles
+  const updateStorage = (productStorage) => {
+    const elementsFound = productStorage.find(
+      (element) =>
+        element.id === idPicked && element.color === colorPicked.value
+    );
+    if (elementsFound) {
+      elementsFound.quantity =
+        parseInt(elementsFound.quantity) + parseInt(optionSelected.quantity);
+    } else {
+      productStorage.push(optionSelected);
+    }
+    // Stockage des données dans le LocalStorage aprés les avoir transformées en chaine de caractères
+    localStorage.setItem("product", JSON.stringify(productStorage));
   };
 
   // Si couleur et quantité sont remplis correctement, message "Ajout panier"
