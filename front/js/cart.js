@@ -1,12 +1,65 @@
 // lecture des données du LocalStorage aprés les avoir "reformées" (tableau)
 let productStorage = JSON.parse(localStorage.getItem("product"));
 
-// Fonction pour recharger la page
-const RestartPage = () => {
-  location.reload();
-};
+// Fonction pour mettre à jours le LS et recharger la page
 
-//       ***** Fonction pour créer/insérer dans le DOM *****
+function uPlocalStorageAndReload() {
+  localStorage.setItem("product", JSON.stringify(productStorage));
+  location.reload();
+}
+
+//Fonction pour supprimer l'élément dans le DOM et dans le Local Storage
+// lors du clique sur le bnt "supprimer"
+
+function suppElement() {
+  const deleteItem = document.querySelectorAll(".deleteItem");
+
+  deleteItem.forEach((currentItem, i) => {
+    currentItem.addEventListener("click", (event) => {
+      event.preventDefault();
+
+      let suppIdSelect = productStorage[i].id;
+      let colorSelect = productStorage[i].color;
+
+      productStorage = productStorage.filter(
+        (elt) => elt.id !== suppIdSelect || elt.color !== colorSelect
+      );
+      uPlocalStorageAndReload();
+    });
+  });
+}
+
+// Fonction pour Modifier de la quatité d'un élément
+
+function modifQty() {
+  const modifQuantity = document.querySelectorAll(".itemQuantity");
+  console.log(modifQuantity);
+
+  modifQuantity.forEach((qtySelect, j) => {
+    qtySelect.addEventListener("change", (event) => {
+      event.preventDefault();
+
+      let newQty = qtySelect.value;
+      let modifQtyIdSelect = productStorage[j].id;
+      let modifQtyColorSelect = productStorage[j].color;
+      let modifiedElement = productStorage.find(
+        (element) =>
+          element.id === modifQtyIdSelect &&
+          element.color == modifQtyColorSelect
+      );
+      if (newQty <= 0 || newQty > 100) {
+        return alert(
+          "Merci de choisir un nombre d'article(s) compris entre 1 et 100 "
+        );
+      } else {
+        modifiedElement.quantity = newQty;
+        uPlocalStorageAndReload();
+      }
+    });
+  });
+}
+
+//       ***** Fonctions pour créer/insérer dans le DOM *****
 //  l'ensemble des éléments récupérés dans le Local Storage et dans l'API
 
 function creatCart(data) {
@@ -14,7 +67,6 @@ function creatCart(data) {
   let totalQty = 0;
   for (let product of productStorage) {
     // Création de l'article dans le DOM
-
     const productArticle = document.createElement("article");
     document.querySelector("#cart__items").appendChild(productArticle);
     productArticle.className = "cart__item";
@@ -92,39 +144,24 @@ function creatCart(data) {
     productDeleteItem.className = "deleteItem";
     productDeleteItem.innerHTML = "Supprimer";
 
-    // Calcul / insertion prix total
+    // insertion calcul prix total
     totalPrice = totalPrice + ligneFound.price * product.quantity;
     document.querySelector("#totalPrice").innerHTML = totalPrice;
 
-    // Calcul / insertion nombre d'articles total
+    // insertion calcul nombre d'articles total
     totalQty = parseInt(totalQty) + parseInt(productItemQuantity.value);
     document.querySelector("#totalQuantity").innerHTML = totalQty;
   }
 
-  let deleteItem = document.querySelectorAll(".deleteItem");
+  suppElement();
 
-  deleteItem.forEach((currentItem, i) => {
-    currentItem.addEventListener("click", (event) => {
-      event.preventDefault();
-
-      let idSelect = productStorage[i].id;
-      let colorSelect = productStorage[i].color;
-
-      productStorage = productStorage.filter(
-        (elt) => elt.id !== idSelect || elt.color !== colorSelect
-      );
-
-      localStorage.setItem("product", JSON.stringify(productStorage));
-
-      RestartPage(data);
-    });
-  });
+  modifQty();
 }
-// ( la récupération de certain éléments comme les images, ou les prix doivent se faire dans l'API
+// (la récupération de certain éléments comme les images, ou les prix doivent se faire dans l'API
 // et non dans le Local Storage afin d'éviter des incohérences
-// dans le cas d'une mise à jour / modifications de ses élements dans l'API )
+// dans le cas d'une mise à jour / modifications de ses élements dans l'API)
 
-//Utilisation de "fetch" pour récupérer les données de l'API :
+//Utilisation de "fetch" pour récupérer les données de l'API, et lancer la fonction creatCart():
 fetch("http://localhost:3000/api/products")
   .then(function (res) {
     return res.json();
@@ -139,7 +176,9 @@ fetch("http://localhost:3000/api/products")
 
 // ***** CONTROLE DES DONNEES UTILISATEUR DU FORMULAIRE (REGEXP) *****
 
-function getForm() {
+// Fonction de controle de l'ensemble des données du formulaire avec l'outil RegExp
+
+function controlForm() {
   let form = document.querySelector(".cart__order__form");
   const baseRegExp = new RegExp("^[-a-zA-Zàâäéèêëïîôöùûüç ]*$");
   const addressRegExp = new RegExp("^[-a-zA-Zàâäéèêëïîôöùûüç0-9.-_ ]*$");
@@ -243,4 +282,4 @@ function getForm() {
   };
 }
 
-getForm();
+controlForm();
