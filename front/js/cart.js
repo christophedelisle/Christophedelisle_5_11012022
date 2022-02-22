@@ -1,16 +1,17 @@
 // lecture des données du LocalStorage aprés les avoir "reformées" (tableau)
 let productStorage = JSON.parse(localStorage.getItem("product"));
 
-// Fonction pour mettre à jours le LS et recharger la page
+let product = "";
+let data = "";
 
+//  *** Fonction pour mettre à jours le LS et recharger la page ***
 function uPlocalStorageAndReload() {
   localStorage.setItem("product", JSON.stringify(productStorage));
   location.reload();
 }
 
-//Fonction pour supprimer l'élément dans le DOM et dans le Local Storage
-// lors du clique sur le bnt "supprimer"
-
+// *** Fonction pour supprimer l'élément dans le DOM et dans le Local Storage ***
+// *** lors du clique sur le bnt "supprimer"
 function suppElement() {
   const deleteItem = document.querySelectorAll(".deleteItem");
 
@@ -29,8 +30,7 @@ function suppElement() {
   });
 }
 
-// Fonction pour Modifier de la quatité d'un élément
-
+// *** Fonction pour Modifier de la quatité d'un élément ***
 function modifQty() {
   const modifQuantity = document.querySelectorAll(".itemQuantity");
   console.log(modifQuantity);
@@ -61,102 +61,112 @@ function modifQty() {
 
 //       ***** Fonctions pour créer/insérer dans le DOM *****
 //  l'ensemble des éléments récupérés dans le Local Storage et dans l'API
+function creatArticle(data, product) {
+  // Récupération dans l'API (data), de l'emplacement (ligne du tableau data) où se situe l'id des produits ajoutés au panier,
+  // afin de pouvoir y sélectionner les élements réstant à ajouter au DOM ( image, description, prix ...)
+  let idFound = (element) => element._id === product.id;
+  let ligneFound = data.find(idFound);
 
-function creatCart(data) {
-  let totalPrice = 0;
+  // Création de l'article dans le DOM
+  const productArticle = document.createElement("article");
+  document.querySelector("#cart__items").appendChild(productArticle);
+  productArticle.className = "cart__item";
+  productArticle.setAttribute("data-id", product.id);
+  productArticle.setAttribute("data-color", product.color);
+
+  // Insertion de l'image
+  const productImgCart = document.createElement("div");
+  productArticle.appendChild(productImgCart);
+  productImgCart.className = "cart__item__img";
+
+  const productImg = document.createElement("img");
+  productImgCart.appendChild(productImg);
+
+  productImg.src = ligneFound.imageUrl;
+  productImg.alt = ligneFound.altTxt;
+
+  // Insertion de la description, du nom du produit, de sa couleur et de son prix
+  const productContent = document.createElement("div");
+  productArticle.appendChild(productContent);
+  productContent.className = "cart__item__content";
+
+  const productContentDescription = document.createElement("div");
+  productContent.appendChild(productContentDescription);
+  productContentDescription.className = "cart__item__content__description";
+
+  const productTitle = document.createElement("h2");
+  productContentDescription.appendChild(productTitle);
+
+  productTitle.innerHTML = ligneFound.name;
+
+  const productColor = document.createElement("p");
+  productContentDescription.appendChild(productColor);
+  productColor.innerHTML = product.color;
+
+  const productPrice = document.createElement("p");
+  productContentDescription.appendChild(productPrice);
+  productPrice.innerHTML = ligneFound.price + " €";
+
+  // Insertion du bouton de gestion des quantités
+  const productContentSetting = document.createElement("div");
+  productContent.appendChild(productContentSetting);
+  productContentSetting.className = "cart__item__content__settings";
+
+  const productContentSettingQuantity = document.createElement("div");
+  productContentSetting.appendChild(productContentSettingQuantity);
+  productContentSettingQuantity.className =
+    "cart__item__content__settings__quantity";
+
+  const productQuantity = document.createElement("p");
+  productContentSettingQuantity.appendChild(productQuantity);
+  productQuantity.innerHTML = "Qté : ";
+
+  const productItemQuantity = document.createElement("input");
+  productContentSettingQuantity.appendChild(productItemQuantity);
+  productItemQuantity.type = "number";
+  productItemQuantity.className = "itemQuantity";
+  productItemQuantity.name = "itemQuantity";
+  productItemQuantity.min = "1";
+  productItemQuantity.max = "100";
+  productItemQuantity.value = product.quantity;
+
+  // Insertion du bouton de suppression du produit
+  const productContentDelete = document.createElement("div");
+  productContentSetting.appendChild(productContentDelete);
+  productContentDelete.className = "cart__item__content__settings__delete";
+
+  const productDeleteItem = document.createElement("p");
+  productContentDelete.appendChild(productDeleteItem);
+  productDeleteItem.className = "deleteItem";
+  productDeleteItem.innerHTML = "Supprimer";
+}
+//       ***** Fonctions pour créer/insérer dans le DOM *****
+//  l'ensemble des éléments récupérés dans le Local Storage et dans l'API
+
+const creatCart = (data, product) => {
   let totalQty = 0;
+  let totalPrice = 0;
   for (let product of productStorage) {
-    // Création de l'article dans le DOM
-    const productArticle = document.createElement("article");
-    document.querySelector("#cart__items").appendChild(productArticle);
-    productArticle.className = "cart__item";
-    productArticle.setAttribute("data-id", product.id);
-    productArticle.setAttribute("data-color", product.color);
+    creatArticle(data, product);
 
     // Récupération dans l'API, de l'emplacement (ligne du tableau data) où se situe l'id des produits ajoutés au panier,
     // afin de pouvoir y sélectionner les élements réstant à ajouter au DOM ( image, description, prix ...)
-    const idFound = (element) => element._id === product.id;
-    const ligneFound = data.find(idFound);
-
-    // Insertion de l'image
-    const productImgCart = document.createElement("div");
-    productArticle.appendChild(productImgCart);
-    productImgCart.className = "cart__item__img";
-
-    const productImg = document.createElement("img");
-    productImgCart.appendChild(productImg);
-
-    productImg.src = ligneFound.imageUrl;
-    productImg.alt = ligneFound.altTxt;
-
-    // Insertion de la description, du nom du produit, de sa couleur et de son prix
-    const productContent = document.createElement("div");
-    productArticle.appendChild(productContent);
-    productContent.className = "cart__item__content";
-
-    const productContentDescription = document.createElement("div");
-    productContent.appendChild(productContentDescription);
-    productContentDescription.className = "cart__item__content__description";
-
-    const productTitle = document.createElement("h2");
-    productContentDescription.appendChild(productTitle);
-
-    productTitle.innerHTML = ligneFound.name;
-
-    const productColor = document.createElement("p");
-    productContentDescription.appendChild(productColor);
-    productColor.innerHTML = product.color;
-
-    const productPrice = document.createElement("p");
-    productContentDescription.appendChild(productPrice);
-    productPrice.innerHTML = ligneFound.price + " €";
-
-    // Insertion du bouton de gestion des quantités
-    const productContentSetting = document.createElement("div");
-    productContent.appendChild(productContentSetting);
-    productContentSetting.className = "cart__item__content__settings";
-
-    const productContentSettingQuantity = document.createElement("div");
-    productContentSetting.appendChild(productContentSettingQuantity);
-    productContentSettingQuantity.className =
-      "cart__item__content__settings__quantity";
-
-    const productQuantity = document.createElement("p");
-    productContentSettingQuantity.appendChild(productQuantity);
-    productQuantity.innerHTML = "Qté : ";
-
-    const productItemQuantity = document.createElement("input");
-    productContentSettingQuantity.appendChild(productItemQuantity);
-    productItemQuantity.type = "number";
-    productItemQuantity.className = "itemQuantity";
-    productItemQuantity.name = "itemQuantity";
-    productItemQuantity.min = "1";
-    productItemQuantity.max = "100";
-    productItemQuantity.value = product.quantity;
-
-    // Insertion du bouton de suppression du produit
-    const productContentDelete = document.createElement("div");
-    productContentSetting.appendChild(productContentDelete);
-    productContentDelete.className = "cart__item__content__settings__delete";
-
-    const productDeleteItem = document.createElement("p");
-    productContentDelete.appendChild(productDeleteItem);
-    productDeleteItem.className = "deleteItem";
-    productDeleteItem.innerHTML = "Supprimer";
+    let idFound = (element) => element._id === product.id;
+    let ligneFound = data.find(idFound);
 
     // insertion calcul prix total
     totalPrice = totalPrice + ligneFound.price * product.quantity;
     document.querySelector("#totalPrice").innerHTML = totalPrice;
 
     // insertion calcul nombre d'articles total
-    totalQty = parseInt(totalQty) + parseInt(productItemQuantity.value);
+    totalQty = parseInt(totalQty) + parseInt(product.quantity);
     document.querySelector("#totalQuantity").innerHTML = totalQty;
   }
+  suppElement(data, product);
 
-  suppElement();
+  modifQty(data, product);
+};
 
-  modifQty();
-}
 // (la récupération de certain éléments comme les images, ou les prix doivent se faire dans l'API
 // et non dans le Local Storage afin d'éviter des incohérences
 // dans le cas d'une mise à jour / modifications de ses élements dans l'API)
@@ -167,7 +177,7 @@ fetch("http://localhost:3000/api/products")
     return res.json();
   })
   .then(function (data) {
-    creatCart(data);
+    creatCart(data, product);
   })
   // Création d'un message d'alerte en cas d'erreur
   .catch(function (err) {
@@ -177,9 +187,8 @@ fetch("http://localhost:3000/api/products")
 // ***** CONTROLE DES DONNEES UTILISATEUR DU FORMULAIRE (REGEXP) *****
 
 // Fonction de controle de l'ensemble des données du formulaire avec l'outil RegExp
-
 function controlForm() {
-  let form = document.querySelector(".cart__order__form");
+  const form = document.querySelector(".cart__order__form");
   const baseRegExp = new RegExp("^[-a-zA-Zàâäéèêëïîôöùûüç ]*$");
   const addressRegExp = new RegExp("^[-a-zA-Zàâäéèêëïîôöùûüç0-9.-_ ]*$");
   const emailRegExp = new RegExp(
@@ -274,7 +283,7 @@ function controlForm() {
     let testEmail = emailRegExp.test(inputEmail.value);
 
     // Message d'erreur ou de validation de la case Email
-    if (testEmail) {
+    if (testEmail && testEmail !== "") {
       emailSelector.innerHTML = "Selection valide";
     } else {
       emailSelector.innerHTML = "Selection non valide";
@@ -283,3 +292,30 @@ function controlForm() {
 }
 
 controlForm();
+
+const inputOrder = document.querySelector("#order");
+
+inputOrder.addEventListener("click", (event) => {
+  // event.preventDefault();
+
+  const contact = {
+    firstName: document.getElementById("firstName").value,
+    lastName: document.getElementById("lastName").value,
+    address: document.getElementById("address").value,
+    city: document.getElementById("city").value,
+    email: document.getElementById("email").value,
+  };
+
+  const idProduct = [];
+  for (let idrecup of productStorage) {
+    idProduct.push(idrecup.id);
+  }
+
+  console.log(idProduct);
+
+  const order = {
+    contact,
+    products: idProduct,
+  };
+  console.log(order);
+});
