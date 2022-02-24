@@ -1,11 +1,16 @@
 // lecture des données du LocalStorage aprés les avoir "reformées" (tableau)
 let productStorage = JSON.parse(localStorage.getItem("product"));
 
-let product = "";
-let data = "";
+// Récupération dans l'API, de l'emplacement (ligne du tableau data) où se situe l'id des produits ajoutés au panier,
+// afin de pouvoir y sélectionner les élements réstant à ajouter au DOM ( image, description, prix ...)
+
+function findElementById(data, product) {
+  let idFound = (element) => element._id === product.id;
+  return data.find(idFound);
+}
 
 //  *** Fonction pour mettre à jours le LS et recharger la page ***
-function uPlocalStorageAndReload() {
+function upLocalStorageAndReload() {
   localStorage.setItem("product", JSON.stringify(productStorage));
   location.reload();
 }
@@ -25,7 +30,7 @@ function suppElement() {
       productStorage = productStorage.filter(
         (elt) => elt.id !== suppIdSelect || elt.color !== colorSelect
       );
-      uPlocalStorageAndReload();
+      upLocalStorageAndReload();
     });
   });
 }
@@ -53,7 +58,7 @@ function modifQty() {
         );
       } else {
         modifiedElement.quantity = newQty;
-        uPlocalStorageAndReload();
+        upLocalStorageAndReload();
       }
     });
   });
@@ -64,8 +69,8 @@ function modifQty() {
 function creatArticle(data, product) {
   // Récupération dans l'API (data), de l'emplacement (ligne du tableau data) où se situe l'id des produits ajoutés au panier,
   // afin de pouvoir y sélectionner les élements réstant à ajouter au DOM ( image, description, prix ...)
-  let idFound = (element) => element._id === product.id;
-  let ligneFound = data.find(idFound);
+
+  let ligneFound = findElementById(data, product);
 
   // Création de l'article dans le DOM
   const productArticle = document.createElement("article");
@@ -143,16 +148,14 @@ function creatArticle(data, product) {
 //       ***** Fonctions pour créer/insérer dans le DOM *****
 //  l'ensemble des éléments récupérés dans le Local Storage et dans l'API
 
-const creatCart = (data, product) => {
+const creatCart = (data) => {
   let totalQty = 0;
   let totalPrice = 0;
+
   for (let product of productStorage) {
     creatArticle(data, product);
 
-    // Récupération dans l'API, de l'emplacement (ligne du tableau data) où se situe l'id des produits ajoutés au panier,
-    // afin de pouvoir y sélectionner les élements réstant à ajouter au DOM ( image, description, prix ...)
-    let idFound = (element) => element._id === product.id;
-    let ligneFound = data.find(idFound);
+    let ligneFound = findElementById(data, product);
 
     // insertion calcul prix total
     totalPrice = totalPrice + ligneFound.price * product.quantity;
@@ -162,9 +165,9 @@ const creatCart = (data, product) => {
     totalQty = parseInt(totalQty) + parseInt(product.quantity);
     document.querySelector("#totalQuantity").innerHTML = totalQty;
   }
-  suppElement(data, product);
+  suppElement();
 
-  modifQty(data, product);
+  modifQty();
 };
 
 // (la récupération de certain éléments comme les images, ou les prix doivent se faire dans l'API
@@ -177,125 +180,20 @@ fetch("http://localhost:3000/api/products")
     return res.json();
   })
   .then(function (data) {
-    creatCart(data, product);
+    creatCart(data);
   })
   // Création d'un message d'alerte en cas d'erreur
   .catch(function (err) {
     alert(err);
   });
 
-// ***** CONTROLE DES DONNEES UTILISATEUR DU FORMULAIRE (REGEXP) *****
+// Fonction de récupération et d'envoi des données (formulaire et produits) en commande
+const form = document.querySelector(".cart__order__form");
 
-// Fonction de controle de l'ensemble des données du formulaire avec l'outil RegExp
-function controlForm() {
-  const form = document.querySelector(".cart__order__form");
-  const baseRegExp = new RegExp("^[-a-zA-Zàâäéèêëïîôöùûüç ]*$");
-  const addressRegExp = new RegExp("^[-a-zA-Zàâäéèêëïîôöùûüç0-9.-_ ]*$");
-  const emailRegExp = new RegExp(
-    "^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$"
-  );
-  const firstNameSelector = document.querySelector("#firstNameErrorMsg");
-  const lastNameSelector = document.querySelector("#lastNameErrorMsg");
-  const addressSelector = document.querySelector("#addressErrorMsg");
-  const citySelector = document.querySelector("#cityErrorMsg");
-  const emailSelector = document.querySelector("#emailErrorMsg");
+const getOrder = () => {
+  const inputOrder = document.querySelector("#order");
 
-  //   -----  PRENOM  -----
-  // Ecoute de la modification de la case Prénom
-  form.firstName.addEventListener("change", function () {
-    validFirstName(this);
-  });
-
-  // Test validation RegExp de la case Prénom
-  const validFirstName = function (inputFirstName) {
-    let testFirstName = baseRegExp.test(inputFirstName.value);
-
-    // Message d'erreur ou de validation de la case Prénom
-    if (testFirstName) {
-      firstNameSelector.innerHTML = "Selection valide";
-    } else {
-      firstNameSelector.innerHTML = "Selection non valide";
-    }
-  };
-
-  //   -----  NOM  -----
-  // Ecoute de la modification de la case nom
-  form.lastName.addEventListener("change", function () {
-    validLastName(this);
-  });
-
-  // Test validation RegExp de la case nom
-  const validLastName = function (inputLastName) {
-    let testLastName = baseRegExp.test(inputLastName.value);
-
-    // Message d'erreur ou de validation de la case nom
-    if (testLastName) {
-      lastNameSelector.innerHTML = "Selection valide";
-    } else {
-      lastNameSelector.innerHTML = "Selection non valide";
-    }
-  };
-
-  //   -----  ADRESSE  -----
-  // Ecoute de la modification de la case adresse
-  form.address.addEventListener("change", function () {
-    validAddress(this);
-  });
-
-  // Test validation RegExp de la case adresse
-  const validAddress = function (inputAddress) {
-    let testAddress = addressRegExp.test(inputAddress.value);
-
-    // Message d'erreur ou de validation de la case adresse
-    if (testAddress) {
-      addressSelector.innerHTML = "Selection valide";
-    } else {
-      addressSelector.innerHTML = "Selection non valide";
-    }
-  };
-
-  //   -----  VILLE  -----
-  // Ecoute de la modification de la case Ville
-  form.city.addEventListener("change", function () {
-    validCity(this);
-  });
-
-  // Test validation RegExp de la case Ville
-  const validCity = function (inputCity) {
-    let testCity = baseRegExp.test(inputCity.value);
-
-    // Message d'erreur ou de validation de la case Ville
-    if (testCity) {
-      citySelector.innerHTML = "Selection valide";
-    } else {
-      citySelector.innerHTML = "Selection non valide";
-    }
-  };
-
-  //   -----  EMAIL  -----
-  // Ecoute de la modification de la case Email
-  form.email.addEventListener("change", function () {
-    validEmail(this);
-  });
-
-  // Test validation RegExp de la case Email
-  const validEmail = function (inputEmail) {
-    let testEmail = emailRegExp.test(inputEmail.value);
-
-    // Message d'erreur ou de validation de la case Email
-    if (testEmail && testEmail !== "") {
-      emailSelector.innerHTML = "Selection valide";
-    } else {
-      emailSelector.innerHTML = "Selection non valide";
-    }
-  };
-}
-
-controlForm();
-
-const inputOrder = document.querySelector("#order");
-
-inputOrder.addEventListener("click", (event) => {
+  //inputOrder.addEventListener("click", (event) => {
   // event.preventDefault();
 
   const contact = {
@@ -318,4 +216,138 @@ inputOrder.addEventListener("click", (event) => {
     products: idProduct,
   };
   console.log(order);
-});
+  // });
+};
+
+// ***** CONTROLE DES DONNEES UTILISATEUR DU FORMULAIRE (REGEXP) *****
+
+// Fonction de controle de l'ensemble des données du formulaire avec l'outil RegExp
+function controlFormAndOrder() {
+  const baseRegExp = new RegExp(/^\S[-a-zA-Zàâäéèêëïîôöùûüç ]*$/);
+  const addressRegExp = new RegExp(/^\S[-a-zA-Zàâäéèêëïîôöùûüç0-9.-_ ]*$/);
+  const emailRegExp = new RegExp(
+    "^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$"
+  );
+  const firstNameSelector = document.querySelector("#firstNameErrorMsg");
+  const lastNameSelector = document.querySelector("#lastNameErrorMsg");
+  const addressSelector = document.querySelector("#addressErrorMsg");
+  const citySelector = document.querySelector("#cityErrorMsg");
+  const emailSelector = document.querySelector("#emailErrorMsg");
+
+  //   -----  PRENOM  -----
+  // Ecoute de la modification de la case Prénom
+  form.firstName.addEventListener("change", function () {
+    validFirstName(this);
+  });
+
+  // Test validation RegExp de la case Prénom
+  const validFirstName = function (inputFirstName) {
+    let testFirstName = baseRegExp.test(inputFirstName.value);
+
+    // Message d'erreur ou de validation de la case Prénom
+    if (testFirstName && testFirstName !== "") {
+      firstNameSelector.innerHTML = "Selection valide";
+      return true;
+    } else {
+      firstNameSelector.innerHTML = "Selection non valide";
+      return false;
+    }
+  };
+
+  //   -----  NOM  -----
+  // Ecoute de la modification de la case nom
+  form.lastName.addEventListener("change", function () {
+    validLastName(this);
+  });
+
+  // Test validation RegExp de la case nom
+  const validLastName = function (inputLastName) {
+    let testLastName = baseRegExp.test(inputLastName.value);
+
+    // Message d'erreur ou de validation de la case nom
+    if (testLastName) {
+      lastNameSelector.innerHTML = "Selection valide";
+      return true;
+    } else {
+      lastNameSelector.innerHTML = "Selection non valide";
+      return false;
+    }
+  };
+
+  //   -----  ADRESSE  -----
+  // Ecoute de la modification de la case adresse
+  form.address.addEventListener("change", function () {
+    validAddress(this);
+  });
+
+  // Test validation RegExp de la case adresse
+  const validAddress = function (inputAddress) {
+    let testAddress = addressRegExp.test(inputAddress.value);
+
+    // Message d'erreur ou de validation de la case adresse
+    if (testAddress) {
+      addressSelector.innerHTML = "Selection valide";
+      return true;
+    } else {
+      addressSelector.innerHTML = "Selection non valide";
+      return false;
+    }
+  };
+
+  //   -----  VILLE  -----
+  // Ecoute de la modification de la case Ville
+  form.city.addEventListener("change", function () {
+    validCity(this);
+  });
+
+  // Test validation RegExp de la case Ville
+  const validCity = function (inputCity) {
+    let testCity = baseRegExp.test(inputCity.value);
+
+    // Message d'erreur ou de validation de la case Ville
+    if (testCity) {
+      citySelector.innerHTML = "Selection valide";
+      return true;
+    } else {
+      citySelector.innerHTML = "Selection non valide";
+      return false;
+    }
+  };
+
+  //   -----  EMAIL  -----
+  // Ecoute de la modification de la case Email
+  form.email.addEventListener("change", function () {
+    validEmail(this);
+  });
+
+  // Test validation RegExp de la case Email
+  const validEmail = function (inputEmail) {
+    let testEmail = emailRegExp.test(inputEmail.value);
+
+    // Message d'erreur ou de validation de la case Email
+    if (testEmail) {
+      emailSelector.innerHTML = "Selection valide";
+      return true;
+    } else {
+      emailSelector.innerHTML = "Selection non valide";
+      return false;
+    }
+  };
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (
+      validEmail(form.email) &&
+      validCity(form.city) &&
+      validAddress(form.address) &&
+      validLastName(form.lastName) &&
+      validFirstName(form.firstName)
+    ) {
+      getOrder();
+    } else {
+      alert("Élément(s) du formulaire non Valide");
+    }
+  });
+}
+
+controlFormAndOrder();
