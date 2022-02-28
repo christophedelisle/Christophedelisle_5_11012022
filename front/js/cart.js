@@ -67,9 +67,6 @@ function modifQty() {
 //       ***** Fonctions pour créer/insérer dans le DOM *****
 //  l'ensemble des éléments récupérés dans le Local Storage et dans l'API
 function creatArticle(data, product) {
-  // Récupération dans l'API (data), de l'emplacement (ligne du tableau data) où se situe l'id des produits ajoutés au panier,
-  // afin de pouvoir y sélectionner les élements réstant à ajouter au DOM ( image, description, prix ...)
-
   let ligneFound = findElementById(data, product);
 
   // Création de l'article dans le DOM
@@ -172,7 +169,7 @@ const creatCart = (data) => {
 
 // (la récupération de certain éléments comme les images, ou les prix doivent se faire dans l'API
 // et non dans le Local Storage afin d'éviter des incohérences
-// dans le cas d'une mise à jour / modifications de ses élements dans l'API)
+// dans le cas d'une mise à jour / modification de ses élements dans l'API)
 
 //Utilisation de "fetch" pour récupérer les données de l'API, et lancer la fonction creatCart():
 fetch("http://localhost:3000/api/products")
@@ -193,9 +190,6 @@ const form = document.querySelector(".cart__order__form");
 const getOrder = () => {
   const inputOrder = document.querySelector("#order");
 
-  //inputOrder.addEventListener("click", (event) => {
-  // event.preventDefault();
-
   const contact = {
     firstName: document.getElementById("firstName").value,
     lastName: document.getElementById("lastName").value,
@@ -209,14 +203,34 @@ const getOrder = () => {
     idProduct.push(idrecup.id);
   }
 
-  console.log(idProduct);
-
+  // Tableau regroupant le données du formulaire et l'ID des produits
   const order = {
     contact,
     products: idProduct,
   };
-  console.log(order);
-  // });
+
+  // Methode POST pour envoyer le tableau "order" vers l'API afin de récupérer en réponse le numéro de commande
+  const postOrder = {
+    method: "POST",
+    body: JSON.stringify(order),
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  };
+
+  fetch("http://localhost:3000/api/products/order", postOrder)
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (dataOrder) {
+      console.log(dataOrder);
+
+      document.location.href = `confirmation.html?orderId=${dataOrder.orderId}`;
+    })
+    .catch(function (err) {
+      alert(err);
+    });
 };
 
 // ***** CONTROLE DES DONNEES UTILISATEUR DU FORMULAIRE (REGEXP) *****
@@ -349,5 +363,4 @@ function controlFormAndOrder() {
     }
   });
 }
-
 controlFormAndOrder();
