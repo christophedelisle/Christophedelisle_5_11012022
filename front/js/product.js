@@ -3,7 +3,8 @@ const str = window.location.href;
 const url = new URL(str);
 const idPicked = url.searchParams.get("id");
 
-//Fonction permétant d'insérer l'image, le nom, le prix, la decription et les différentes couleurs du canapé séléctionné, dans la page (DOM) produit
+// Fonction permétant d'insérer l'image, le nom, le prix, la decription
+// et les différentes couleurs du canapé séléctionné, dans la page (DOM) produit
 const addParamHtml = (productSelect) => {
   const paramImg = document.createElement("img");
   document.querySelector(".item .item__img").appendChild(paramImg);
@@ -11,7 +12,6 @@ const addParamHtml = (productSelect) => {
   paramImg.alt = productSelect.altTxt;
 
   const paramTitle = document.querySelector("#title");
-
   paramTitle.innerHTML = productSelect.name;
 
   const paramPrice = document.querySelector("#price");
@@ -44,7 +44,8 @@ fetch(`http://localhost:3000/api/products/${idPicked}`)
     alert(err);
   });
 
-// Evenement lors du clique sur btn "Ajout au panier", permétant d'envoyer les éléments qui seront nécéssaires à la conception de la page panier vers le local storage
+// Evenement lors du clique sur btn "Ajout au panier",
+// permétant d'envoyer les éléments qui seront nécéssaires à la conception de la page panier vers le local storage
 const addToCart = document.querySelector("#addToCart");
 addToCart.addEventListener("click", function () {
   const colorPicked = document.querySelector("#colors");

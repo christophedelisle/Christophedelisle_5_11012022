@@ -1,5 +1,6 @@
-// lecture des données du LocalStorage aprés les avoir "reformées" (tableau)
-let productStorage = JSON.parse(localStorage.getItem("product"));
+// lecture des données du LocalStorage aprés les avoir "reformées" (tableau),
+// ou création d'un tableau vide si LS est vide
+let productStorage = JSON.parse(localStorage.getItem("product")) || [];
 
 // Récupération dans l'API, de l'emplacement (ligne du tableau data) où se situe l'id des produits ajoutés au panier,
 // afin de pouvoir y sélectionner les élements réstant à ajouter au DOM ( image, description, prix ...)
@@ -9,14 +10,14 @@ function findElementById(data, product) {
   return data.find(idFound);
 }
 
-//  *** Fonction pour mettre à jours le LS et recharger la page ***
+// Fonction pour mettre à jours le LS et recharger la page
 function upLocalStorageAndReload() {
   localStorage.setItem("product", JSON.stringify(productStorage));
   location.reload();
 }
 
-// *** Fonction pour supprimer l'élément dans le DOM et dans le Local Storage ***
-// *** lors du clique sur le bnt "supprimer"
+// Fonction pour supprimer l'élément dans le DOM et dans le Local Storage
+// lors du clique sur le bnt "supprimer"
 function suppElement() {
   const deleteItem = document.querySelectorAll(".deleteItem");
 
@@ -35,7 +36,7 @@ function suppElement() {
   });
 }
 
-// *** Fonction pour Modifier de la quatité d'un élément ***
+// *** Fonction pour modifier la quantité d'un élément ***
 function modifQty() {
   const modifQuantity = document.querySelectorAll(".itemQuantity");
   console.log(modifQuantity);
@@ -203,13 +204,13 @@ const getOrder = () => {
     idProduct.push(idrecup.id);
   }
 
-  // Tableau regroupant le données du formulaire et l'ID des produits
+  // Tableau regroupant les données du formulaire et l'ID des produits
   const order = {
     contact,
     products: idProduct,
   };
 
-  // Methode POST pour envoyer le tableau "order" vers l'API afin de récupérer en réponse le numéro de commande
+  // Methode POST pour envoyer le tableau "order", afin de récupérer en réponse le numéro de commande
   const postOrder = {
     method: "POST",
     body: JSON.stringify(order),
@@ -355,11 +356,12 @@ function controlFormAndOrder() {
       validCity(form.city) &&
       validAddress(form.address) &&
       validLastName(form.lastName) &&
-      validFirstName(form.firstName)
+      validFirstName(form.firstName) &&
+      localStorage.length != 0
     ) {
       getOrder();
     } else {
-      alert("Élément(s) du formulaire non Valide");
+      alert("Élément(s) du formulaire non valide ou Panier vide");
     }
   });
 }
